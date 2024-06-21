@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Reimbursement</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: auto;
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        .row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .row label {
+            width: 100px;
+            margin-right: 10px;
+        }
+        input[type="text"], input[type="email"], input[type="date"], input[type="number"], input[type="file"], select {
+            flex: 1;
+            padding: 8px;
+            margin: 5px 0;
+            box-sizing: border-box;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        #totalAmount {
+            text-align: right;
+            margin-top: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Expense Reimbursement</h1>
+        <form id="expenseForm" onsubmit="submitForm(event)">
+            <!-- Employee Details -->
+            <div class="row">
+                <label for="employeeName">EE Name:</label>
+                <input type="text" id="employeeName" name="employeeName" maxlength="20" required>
+                <label for="employeeID">EE ID:</label>
+                <input type="text" id="employeeID" name="employeeID" maxlength="4" required>
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" maxlength="30" required>
+            </div>
+
+            <!-- Date Range -->
+            <div class="row">
+                <label for="startDate">Start Date:</label>
+                <input type="date" id="startDate" name="startDate" required>
+                <label for="endDate">End Date:</label>
+                <input type="date" id="endDate" name="endDate" required>
+            </div>
+
+            <!-- Expense Table -->
+            <h2>Expense Details</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Trn. Date</th>
+                        <th>Category</th>
+                        <th>Description</th>
+                        <th>Amount</th>
+                        <th>Attachment</th>
+                    </tr>
+                </thead>
+                <tbody id="expenseTableBody">
+                    <tr>
+                        <td><input type="date" name="transactionDate" required></td>
+                        <td>
+                            <select name="category" required>
+                                <option value="Meal">Meal</option>
+                                <option value="Mileage">Mileage</option>
+                                <option value="CME">CME</option>
+                                <option value="License Fee">License Fee</option>
+                            </select>
+                        </td>
+                        <td><input type="text" name="description" required></td>
+                        <td><input type="number" name="amount" min="0" step="0.01" required></td>
+                        <td><input type="file" name="attachment"></td>
+                    </tr>
+                </tbody>
+            </table>
+            <button type="button" onclick="addExpenseRow()">Add Row</button>
+
+            <!-- Total Amount -->
+            <div id="totalAmount">Total Amount: $0.00</div>
+
+            <!-- Submit Button -->
+            <button type="submit">Submit</button>
+        </form>
+
+        <!-- Display Table -->
+        <h2>Submitted Expenses</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>EE Name</th>
+                    <th>EE ID</th>
+                    <th>Email</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Trn. Date</th>
+                    <th>Category</th>
+                    <th>Description</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody id="submittedExpensesTableBody">
+                <!-- Submitted expenses will be displayed here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function addExpenseRow() {
+            // Create a new row with empty input fields
+            var newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td><input type="date" name="transactionDate" required></td>
+                <td>
+                    <select name="category" required>
+                        <option value="Meal">Meal</option>
+                        <option value="Mileage">Mileage</option>
+                        <option value="CME">CME</option>
+                        <option value="License Fee">License Fee</option>
+                    </select>
+                </td>
+                <td><input type="text" name="description" required></td>
+                <td><input type="number" name="amount" min="0" step="0.01" required></td>
+                <td><input type="file" name="attachment"></td>
+            `;
+            // Append the new row to the table body
+            document.getElementById('expenseTableBody').appendChild(newRow);
+        }
+
+        // Calculate total amount when the amount fields change
+        document.addEventListener('input', function (e) {
+            if (e.target && e.target.name === 'amount') {
+                calculateTotal();
+            }
+        });
+
+        function calculateTotal() {
+            var amountInputs = document.getElementsByName('amount');
+            var total = 0;
+            for (var i = 0; i < amountInputs.length; i++) {
+                total += parseFloat(amountInputs[i].value) || 0;
+            }
+            document.getElementById('totalAmount').innerText = 'Total Amount: $' + total.toFixed(2);
+        }
+
+        function submitForm(event) {
+            event.preventDefault();
+
+            var formData = new FormData(document.getElementById('expenseForm'));
+            var expenses = [];
+
+            var rows = document.querySelectorAll('#expenseTableBody tr');
+            rows.forEach(function(row) {
+                var expense = {
+                    transactionDate: row.querySelector('input[name="transactionDate"]').value,
+                    category: row.querySelector('select[name="category"]').value,
+                    description: row.querySelector('input[name="description"]').value,
+                    amount: row.querySelector('input[name="amount"]').value,
+                };
+                expenses.push(expense);
+            });
+
+            var data = {
+                employeeName: formData.get('employeeName'),
+                employeeID: formData.get('employeeID'),
+                email: formData.get('email'),
+                startDate: formData.get('startDate'),
+                endDate: formData.get('endDate'),
+                expenses: expenses
+            };
+
+            fetch('YOUR_GOOGLE_APPS_SCRIPT_URL', {
+                method: 'POST',
+                body: JSON.stringify(data),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert('Form submitted successfully');
+                displaySubmittedData(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function displaySubmittedData(data) {
+            var submittedExpensesTableBody = document.getElementById('submittedExpensesTableBody');
+
+            var newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td>${data.employeeName}</td>
+                <td>${data.employeeID}</td>
+                <td>${data.email}</td>
+                <td>${data.startDate}</td>
+                <td>${data.endDate}</td>
+                <td>${data.transactionDate}</td>
+                <td>${data.category}</td>
+                <td>${data.description}</td>
+                <td>${data.amount}</td>
+            `;
+            submittedExpensesTableBody.appendChild(newRow);
+        }
+    </script>
+</body>
+</html>
